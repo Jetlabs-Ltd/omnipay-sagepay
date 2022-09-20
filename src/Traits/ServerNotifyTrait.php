@@ -1,9 +1,10 @@
 <?php
 
-namespace Omnipay\SagePay\Message;
+namespace Omnipay\SagePay\Traits;
 
 use Omnipay\Common\Exception\InvalidResponseException;
 use Omnipay\Common\Message\NotificationInterface;
+use Omnipay\SagePay\Message\Response;
 
 /**
  * Data access methods shared between the ServerNotificationRequest and
@@ -13,7 +14,7 @@ use Omnipay\Common\Message\NotificationInterface;
 trait ServerNotifyTrait
 {
     /**
-     * The signature supplied with the data.
+     * The signature supplied with the data, made lower case.
      */
     public function getSignature()
     {
@@ -21,8 +22,8 @@ trait ServerNotifyTrait
     }
 
     /**
-     * Create the signature calculated from the POST data and the saved SecurityKey
-     * (the SagePay one-use signature).
+     * Create the signature calculated from the POST data and the saved SecurityKey.
+     * This signature is lower case.
      */
     public function buildSignature()
     {
@@ -32,7 +33,9 @@ trait ServerNotifyTrait
 
         $VPSTxId = $this->getVPSTxId();
 
-        if ($this->getTxType() === Response::TXTYPE_TOKEN && $this->getStatus() === Response::SAGEPAY_STATUS_OK) {
+        if ($this->getTxType() === Response::TXTYPE_TOKEN
+            && $this->getStatus() === Response::SAGEPAY_STATUS_OK
+        ) {
             // For some bizarre reason, the VPSTxId is hashed at the Sage Pay gateway
             // without its curly brackets, so we must do the same to validate the hash.
             // This only happens for a valid TOKEN request, and not for an aborted
@@ -41,13 +44,13 @@ trait ServerNotifyTrait
             // though they are present. The ABORTed token request does include the address
             // result details in the signature, even though they are no relevant.
 
-            $VPSTxId = str_replace(array('{', '}'), '', $VPSTxId);
+            $VPSTxId = str_replace(['{', '}'], '', $VPSTxId);
         }
 
         // Transaction types PAYMENT, DEFERRED and AUTHENTICATE (when suppoted)
         // and non-transaction TOKEN request.
 
-        $signature_data = array(
+        $signatureData = array(
             $VPSTxId,
             // VendorTxCode
             $this->getTransactionId(),
@@ -55,17 +58,19 @@ trait ServerNotifyTrait
             $this->getTxAuthNo(),
             strtolower($this->getVendor()),
             $this->getAVSCV2(),
-            $this->getToken(),
+            ($this->getTxType() === Response::TXTYPE_TOKEN ? $this->getToken() : ''),
             // As saved in the merchant application.
             $this->getSecurityKey(),
         );
 
-        if ($this->getTxType() != Response::TXTYPE_TOKEN || $this->getStatus() != Response::SAGEPAY_STATUS_OK) {
-            // Do not use any of these fields for a successful TOKEN transaction, even
-            // though some of them may be present.
+        if ($this->getTxType() !== Response::TXTYPE_TOKEN
+            || $this->getStatus() !== Response::SAGEPAY_STATUS_OK
+        ) {
+            // Do not use any of these fields for a successful TOKEN transaction,
+            // even though some of them may be present.
 
-            $signature_data = array_merge(
-                $signature_data,
+            $signatureData = array_merge(
+                $signatureData,
                 array(
                     // Details for AVSCV2:
                     $this->getAddressResult(),
@@ -80,15 +85,19 @@ trait ServerNotifyTrait
                     $this->getCardType(),
                     $this->getLast4Digits(),
                     // New for protocol v3.00
-                    $this->getDataItem('DeclineCode'),
+                    $this->getDeclineCode(),
                     $this->getExpiryDate(),
                     $this->getFraudResponse(),
                     $this->getBankAuthCode(),
+                    // New for protocol v4.00
+                    $this->getACSTransID(),
+                    $this->getDSTransID(),
+                    $this->getSchemeTraceID(),
                 )
             );
         }
 
-        return md5(implode('', $signature_data));
+        return md5(implode('', $signatureData));
     }
 
     /**
@@ -110,13 +119,18 @@ trait ServerNotifyTrait
     public function getTransactionStatus()
     {
         // If the signature check fails, then all bets are off - the POST cannot be trusted.
+
         if (! $this->isValid()) {
             return static::STATUS_FAILED;
         }
 
         $status = $this->getStatus();
 
-        if ($status === Response::SAGEPAY_STATUS_OK) {
+        if ($status === Response::SAGEPAY_STATUS_OK
+            || $status === Response::SAGEPAY_STATUS_OK_REPEATED
+            || $status === Response::SAGEPAY_STATUS_AUTHENTICATED
+            || $status === Response::SAGEPAY_STATUS_REGISTERED
+        ) {
             return static::STATUS_COMPLETED;
         }
 
@@ -141,27 +155,35 @@ trait ServerNotifyTrait
     }
 
     /**
-     * The VendorTxCode is POSTed - we will need this for looking up the transaction
-     * locally.
-     */
-    public function getTransactionId()
-    {
-        return $this->getDataItem('VendorTxCode');
-    }
-
-    /**
-     * Gateway Reference
+     * Gateway Reference.
      *
-     * @return string A reference provided by the gateway to represent this transaction
+     * @return string|null A reference provided by the gateway to represent this transaction
      */
     public function getTransactionReference()
     {
-        $reference = array();
+        $reference = [];
+
+        foreach (['TxAuthNo', 'VPSTxId'] as $key) {
+            $value = $this->getDataItem($key);
+
+            if ($value !== null) {
+                $reference[$key] = $value;
+            }
+        }
+
+        // If there is no auth number or VPS transaction ID, then
+        // there is no reference to speak of; return null.
+
+        if (empty($reference)) {
+            return;
+        }
+
+        // The security key is passed in as a parameter by the application,
+        // and not POSTed from the gateway.
+
         $reference['SecurityKey'] = $this->getSecurityKey();
 
-        foreach (array('VendorTxCode', 'TxAuthNo', 'VPSTxId') as $key) {
-            $reference[$key] = $this->getDataItem($key);
-        }
+        $reference['VendorTxCode'] = $this->getTransactionId();
 
         ksort($reference);
 

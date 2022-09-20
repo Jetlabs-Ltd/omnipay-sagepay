@@ -1,6 +1,6 @@
 <?php
 
-namespace Omnipay\SagePay\Message;
+namespace Omnipay\SagePay\Traits;
 
 /**
  * Response fields shared between the Direct/Server response class and
@@ -21,6 +21,17 @@ trait ResponseFieldsTrait
         $data = $this->getData();
 
         return isset($this->data[$name]) ? $this->data[$name] : $default;
+    }
+
+    /**
+     * @return bool True if the transaction is successful and complete.
+     */
+    public function isSuccessful()
+    {
+        return $this->getStatus() === static::SAGEPAY_STATUS_OK
+            || $this->getStatus() === static::SAGEPAY_STATUS_OK_REPEATED
+            || $this->getStatus() === static::SAGEPAY_STATUS_REGISTERED
+            || $this->getStatus() === static::SAGEPAY_STATUS_AUTHENTICATED;
     }
 
     /**
@@ -203,6 +214,30 @@ trait ResponseFieldsTrait
     }
 
     /**
+     * @return string
+     */
+    public function getDSTransID()
+    {
+        return $this->getDataItem('DSTransID');
+    }
+
+    /**
+     * @return string
+     */
+    public function getACSTransID()
+    {
+        return $this->getDataItem('ACSTransID');
+    }
+
+    /**
+     * @return string
+     */
+    public function getSchemeTraceID()
+    {
+        return $this->getDataItem('SchemeTraceID');
+    }
+
+    /**
      * Raw expiry date for the card, "MMYY" format by default.
      * The expiry date is available for Sage Pay Direct responses, even if the
      * remaining card details are not.
@@ -253,5 +288,17 @@ trait ResponseFieldsTrait
             $dateTime = \DateTime::createFromFormat('y', substr($expiryDate, 2, 2));
             return (int)$dateTime->format('Y');
         }
+    }
+
+    /**
+     * The transaction ID will be returned in the data for the Form API, or
+     * we will have to refer to the request for the Server and Direct APIs.
+     *
+     * @return @inherit
+     */
+    public function getTransactionId()
+    {
+        return $this->getDataItem('VendorTxCode')
+            ?: $this->getRequest()->getTransactionId();
     }
 }

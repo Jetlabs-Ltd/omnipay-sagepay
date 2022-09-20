@@ -2,8 +2,6 @@
 
 namespace Omnipay\SagePay;
 
-use Omnipay\Common\AbstractGateway;
-
 /**
  * Sage Pay Direct Gateway
  */

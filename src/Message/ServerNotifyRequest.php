@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Omnipay\Common\Exception\InvalidResponseException;
 use Omnipay\Common\Message\NotificationInterface;
 use Guzzle\Http\ClientInterface;
+use Omnipay\SagePay\Traits\ResponseFieldsTrait;
 
 /**
  * Sage Pay Server Notification.

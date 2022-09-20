@@ -5,6 +5,7 @@ namespace Omnipay\SagePay\Message;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
 use Omnipay\Common\Message\RequestInterface;
+use Omnipay\SagePay\Traits\ResponseFieldsTrait;
 
 /**
  * Sage Pay Response
@@ -247,6 +248,13 @@ class Response extends AbstractResponse implements RedirectResponseInterface
     public function getRedirectData()
     {
         if ($this->isRedirect()) {
+            if ($creq = $this->getDataItem('CReq')) {
+                return [
+                    'creq' => $creq,
+                    'threeDSSessionData' => $this->getVPSTxId(),
+                ];
+            }
+
             return array(
                 'PaReq' => $this->data['PAReq'],
                 'TermUrl' => $this->getRequest()->getReturnUrl(),
