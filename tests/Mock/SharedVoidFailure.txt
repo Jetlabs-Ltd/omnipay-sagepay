@@ -8,6 +8,6 @@ Content-Type: Text/Plain
 Set-Cookie: ASPSESSIONIDSEHSCTTR=FNBHGPBDMGDJCNLCDCDPGKCA; secure; path=/
 Cache-control: private
 
-VPSProtocol=3.00
+VPSProtocol=4.00
 Status=INVALID
 StatusDetail=4041 : The Transaction type does not support the requested operation.

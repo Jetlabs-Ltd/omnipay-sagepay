@@ -7,6 +7,7 @@ use Omnipay\Common\Exception\InvalidResponseException;
 use Omnipay\Common\Message\NotificationInterface;
 use Guzzle\Http\ClientInterface;
 use Omnipay\SagePay\Traits\ResponseFieldsTrait;
+use Omnipay\SagePay\Traits\ServerNotifyTrait;
 
 /**
  * Sage Pay Server Notification.
