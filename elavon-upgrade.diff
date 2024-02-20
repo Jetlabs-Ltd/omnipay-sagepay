@@ -1,0 +1,556 @@
+commit 29b67bd4bef4b7fdb8644ccadaa549be6e307458
+Merge: 2925574 3db0fbd
+Author: Jason Judge <jason.judge@consil.co.uk>
+Date:   Sat Nov 4 12:01:18 2023 +0000
+
+    Merge branch 'jamieburchell-opayo-urls'
+
+
+commit 3db0fbdf614370300eff893d7cc1249935aaef03
+Author: Jason Judge <jason.judge@consil.co.uk>
+Date:   Sat Nov 4 11:59:59 2023 +0000
+
+    Fix old options in phpunit config
+
+diff --git a/phpunit.xml.dist b/phpunit.xml.dist
+index d4fc8a3..83aafa7 100644
+--- a/phpunit.xml.dist
++++ b/phpunit.xml.dist
+@@ -8,16 +8,15 @@
+          convertWarningsToExceptions="true"
+          processIsolation="false"
+          stopOnFailure="false"
+-         syntaxCheck="false"
+          beStrictAboutTestsThatDoNotTestAnything="false">
+     <testsuites>
+         <testsuite name="Omnipay Test Suite">
+             <directory>./tests/</directory>
+         </testsuite>
+     </testsuites>
+-    <filter>
+-        <whitelist>
++    <coverage>
++        <include>
+             <directory>./src</directory>
+-        </whitelist>
+-    </filter>
++        </include>
++    </coverage>
+ </phpunit>
+
+commit 6d2c45ea37848fc9b22af823d7c5a355f0690b3f
+Merge: db1ee97 92478af
+Author: Jason Judge <jason.judge@consil.co.uk>
+Date:   Sat Nov 4 11:55:52 2023 +0000
+
+    Merge branch 'utf8decodefix' of github.com:jamieburchell/omnipay-sagepay into jamieburchell-opayo-urls
+
+
+commit db1ee97a86940fe8628d2f68aab132fab7c1f0c6
+Author: Jason Judge <jason.judge@consil.co.uk>
+Date:   Sat Nov 4 11:54:53 2023 +0000
+
+    Fix more dynamic property errors in tests
+
+diff --git a/tests/DirectGatewayTest.php b/tests/DirectGatewayTest.php
+index 6f776e5..098a7f2 100644
+--- a/tests/DirectGatewayTest.php
++++ b/tests/DirectGatewayTest.php
+@@ -6,6 +6,13 @@ use Omnipay\Tests\GatewayTestCase;
+ 
+ class DirectGatewayTest extends GatewayTestCase
+ {
++    protected $purchaseOptions;
++    protected $captureOptions;
++    protected $repeatOptions;
++    protected $refundOptions;
++    protected $voidOptions;
++    protected $abortOptions;
++
+     public function setUp(): void
+     {
+         parent::setUp();
+diff --git a/tests/FormGatewayTest.php b/tests/FormGatewayTest.php
+index 1e61cba..6a31a79 100644
+--- a/tests/FormGatewayTest.php
++++ b/tests/FormGatewayTest.php
+@@ -6,6 +6,10 @@ use Omnipay\Tests\GatewayTestCase;
+ 
+ class FormGatewayTest extends GatewayTestCase
+ {
++    protected $purchaseOptions;
++    protected $captureOptions;
++    protected $completePurchaseOptions;
++
+     public function setUp(): void
+     {
+         parent::setUp();
+diff --git a/tests/Message/DirectCompleteAuthorizeRequestTest.php b/tests/Message/DirectCompleteAuthorizeRequestTest.php
+index 2d37e2b..bd752a7 100644
+--- a/tests/Message/DirectCompleteAuthorizeRequestTest.php
++++ b/tests/Message/DirectCompleteAuthorizeRequestTest.php
+@@ -7,6 +7,8 @@ use Mockery as m;
+ 
+ class DirectCompleteAuthorizeRequestTest extends TestCase
+ {
++    protected $request;
++
+     public function testDirectCompleteAuthorizeRequestSuccess()
+     {
+         parent::setUp();
+diff --git a/tests/Message/ServerAuthorizeRequestTest.php b/tests/Message/ServerAuthorizeRequestTest.php
+index 052ae0d..99bcb7e 100644
+--- a/tests/Message/ServerAuthorizeRequestTest.php
++++ b/tests/Message/ServerAuthorizeRequestTest.php
+@@ -6,6 +6,8 @@ use Omnipay\Tests\TestCase;
+ 
+ class ServerAuthorizeRequestTest extends TestCase
+ {
++    protected $request;
++
+     const SURCHARGE_XML = '<surcharges><surcharge><paymentType>VISA</paymentType><percentage>2.50</percentage></surcharge></surcharges>';
+ 
+     public function setUp(): void
+diff --git a/tests/Message/ServerPurchaseRequestTest.php b/tests/Message/ServerPurchaseRequestTest.php
+index b60216d..ab8f998 100644
+--- a/tests/Message/ServerPurchaseRequestTest.php
++++ b/tests/Message/ServerPurchaseRequestTest.php
+@@ -6,9 +6,10 @@ use Omnipay\Tests\TestCase;
+ 
+ class ServerPurchaseRequestTest extends TestCase
+ {
+-
+     const SURCHARGE_XML = '<surcharges><surcharge><paymentType>VISA</paymentType><percentage>2.50</percentage></surcharge></surcharges>';
+ 
++    protected $request;
++
+     public function testInitialize()
+     {
+         $this->request = new ServerPurchaseRequest($this->getHttpClient(), $this->getHttpRequest());
+diff --git a/tests/Message/SharedAbortRequestTest.php b/tests/Message/SharedAbortRequestTest.php
+index c0289cd..58f5d07 100644
+--- a/tests/Message/SharedAbortRequestTest.php
++++ b/tests/Message/SharedAbortRequestTest.php
+@@ -6,6 +6,8 @@ use Omnipay\Tests\TestCase;
+ 
+ class SharedAbortRequestTest extends TestCase
+ {
++    protected $request;
++
+     public function setUp(): void
+     {
+         parent::setUp();
+diff --git a/tests/Message/SharedCaptureRequestTest.php b/tests/Message/SharedCaptureRequestTest.php
+index 3b33e3f..1aed585 100644
+--- a/tests/Message/SharedCaptureRequestTest.php
++++ b/tests/Message/SharedCaptureRequestTest.php
+@@ -6,6 +6,8 @@ use Omnipay\Tests\TestCase;
+ 
+ class SharedCaptureRequestTest extends TestCase
+ {
++    protected $request;
++
+     public function setUp(): void
+     {
+         parent::setUp();
+diff --git a/tests/Message/SharedRefundRequestTest.php b/tests/Message/SharedRefundRequestTest.php
+index cdb13b4..6d27067 100644
+--- a/tests/Message/SharedRefundRequestTest.php
++++ b/tests/Message/SharedRefundRequestTest.php
+@@ -6,6 +6,8 @@ use Omnipay\Tests\TestCase;
+ 
+ class SharedRefundRequestTest extends TestCase
+ {
++    protected $request;
++
+     public function setUp(): void
+     {
+         parent::setUp();
+diff --git a/tests/Message/SharedVoidRequestTest.php b/tests/Message/SharedVoidRequestTest.php
+index ed9307d..f51a013 100644
+--- a/tests/Message/SharedVoidRequestTest.php
++++ b/tests/Message/SharedVoidRequestTest.php
+@@ -6,6 +6,8 @@ use Omnipay\Tests\TestCase;
+ 
+ class SharedVoidRequestTest extends TestCase
+ {
++    protected $request;
++
+     public function setUp(): void
+     {
+         parent::setUp();
+
+commit 45050c84c89139aea98921c004480fed7e7f4708
+Merge: c38e546 0e1a215
+Author: Jason Judge <jason.judge@consil.co.uk>
+Date:   Sat Nov 4 11:47:00 2023 +0000
+
+    Merge branch 'nullfix' of github.com:jamieburchell/omnipay-sagepay into jamieburchell-opayo-urls
+
+
+commit c38e5464c815aacbd0e2bfbdb4ea90f68275490c
+Author: Jason Judge <jason.judge@consil.co.uk>
+Date:   Sat Nov 4 11:45:55 2023 +0000
+
+    Create explicit properties to fix dynamic properties errors.
+
+diff --git a/.gitignore b/.gitignore
+index 8a282a5..590df94 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -2,3 +2,4 @@
+ composer.lock
+ composer.phar
+ phpunit.xml
++/.phpunit.result.cache
+diff --git a/composer.json b/composer.json
+index d6645e4..6e71107 100644
+--- a/composer.json
++++ b/composer.json
+@@ -35,12 +35,14 @@
+     },
+     "require": {
+         "php": "^7.3|^8",
+-        "omnipay/common": "~3.0"
++        "omnipay/common": "~3.0",
++        "symfony/http-client": "^6.0"
+     },
+     "require-dev": {
+         "omnipay/tests": "^4.1",
+         "squizlabs/php_codesniffer": "^3",
+-        "phpspec/prophecy-phpunit": "^2.0"
++        "phpspec/prophecy-phpunit": "^2.0",
++        "http-interop/http-factory-guzzle": "^1.2"
+     },
+     "extra": {
+         "branch-alias": {
+@@ -51,5 +53,10 @@
+         "test": "phpunit",
+         "check-style": "phpcs -p --standard=PSR2 src/",
+         "fix-style": "phpcbf -p --standard=PSR2 src/"
++    },
++    "config": {
++        "allow-plugins": {
++            "php-http/discovery": true
++        }
+     }
+ }
+diff --git a/tests/Message/ServerNotifyRequestTest.php b/tests/Message/ServerNotifyRequestTest.php
+index aa53b78..3763176 100644
+--- a/tests/Message/ServerNotifyRequestTest.php
++++ b/tests/Message/ServerNotifyRequestTest.php
+@@ -11,6 +11,8 @@ use Mockery as m;
+ 
+ class ServerNotifyRequestTest extends TestCase
+ {
++    protected $request;
++
+     public function testServerNotifyResponseSuccess()
+     {
+         parent::setUp();
+diff --git a/tests/ServerGatewayTest.php b/tests/ServerGatewayTest.php
+index 3d47714..468eedb 100644
+--- a/tests/ServerGatewayTest.php
++++ b/tests/ServerGatewayTest.php
+@@ -8,6 +8,14 @@ class ServerGatewayTest extends GatewayTestCase
+ {
+     protected $error_3082_text = '3082 : The Description value is too long.';
+ 
++    protected $purchaseOptions;
++    protected $captureOptions;
++    protected $completePurchaseOptions;
++    protected $voidOptions;
++    protected $abortOptions;
++    protected $refundOptions;
++    protected $repeatOptions;
++
+     public function setUp(): void
+     {
+         parent::setUp();
+
+commit 92478aff4750a83143a3103ed0df909c289c3d33
+Author: Jamie Burchell <jamie@ib3.uk>
+Date:   Fri Nov 3 16:50:45 2023 +0000
+
+    Replace deprecated utf8_decode call
+
+diff --git a/src/Message/Form/AuthorizeRequest.php b/src/Message/Form/AuthorizeRequest.php
+index eef3f88..7abd60c 100644
+--- a/src/Message/Form/AuthorizeRequest.php
++++ b/src/Message/Form/AuthorizeRequest.php
+@@ -201,7 +201,7 @@ class AuthorizeRequest extends DirectAuthorizeRequest
+ 
+         $query = [];
+         foreach ($data as $name => $value) {
+-            $query[] = $name . '=' . ($disableUtf8Decode ? $value : utf8_decode($value));
++            $query[] = $name . '=' . ($disableUtf8Decode ? $value : mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8'));
+         }
+         $query = implode('&', $query);
+ 
+
+commit 0e1a21598295ca9a0878dff4874f12eb6030bb4c
+Author: Jamie Burchell <jamie@ib3.uk>
+Date:   Fri Nov 3 16:16:06 2023 +0000
+
+    Fix passing NULL to functions not allowing it
+
+diff --git a/src/Message/ServerAuthorizeRequest.php b/src/Message/ServerAuthorizeRequest.php
+index 90bddb3..03b0696 100644
+--- a/src/Message/ServerAuthorizeRequest.php
++++ b/src/Message/ServerAuthorizeRequest.php
+@@ -38,7 +38,7 @@ class ServerAuthorizeRequest extends DirectAuthorizeRequest
+ 
+         // Set the profile only if it is LOW (for iframe use) or NORMAL (for full-page redirects)
+ 
+-        $profile = strtoupper($this->getProfile());
++        $profile = strtoupper($this->getProfile() ?? '');
+ 
+         if ($profile === static::PROFILE_NORMAL || $profile === static::PROFILE_LOW) {
+             $data['Profile'] = $this->getProfile();
+diff --git a/src/Message/ServerCompleteAuthorizeRequest.php b/src/Message/ServerCompleteAuthorizeRequest.php
+index a5f313a..118ddfb 100644
+--- a/src/Message/ServerCompleteAuthorizeRequest.php
++++ b/src/Message/ServerCompleteAuthorizeRequest.php
+@@ -65,7 +65,7 @@ class ServerCompleteAuthorizeRequest extends AbstractRequest
+     {
+         // The two signatures to compare.
+         $signature = $this->getSignature();
+-        $VPSSignature = strtolower($this->httpRequest->request->get('VPSSignature'));
++        $VPSSignature = strtolower($this->httpRequest->request->get('VPSSignature') ?? '');
+ 
+         if ($VPSSignature !== $signature) {
+             throw new InvalidResponseException;
+diff --git a/src/Traits/ServerNotifyTrait.php b/src/Traits/ServerNotifyTrait.php
+index fd609fb..e009178 100644
+--- a/src/Traits/ServerNotifyTrait.php
++++ b/src/Traits/ServerNotifyTrait.php
+@@ -18,7 +18,7 @@ trait ServerNotifyTrait
+      */
+     public function getSignature()
+     {
+-        return strtolower($this->getDataItem('VPSSignature'));
++        return strtolower($this->getDataItem('VPSSignature') ?? '');
+     }
+ 
+     /**
+@@ -56,7 +56,7 @@ trait ServerNotifyTrait
+             $this->getTransactionId(),
+             $this->getStatus(),
+             $this->getTxAuthNo(),
+-            strtolower($this->getVendor()),
++            strtolower($this->getVendor() ?? ''),
+             $this->getAVSCV2(),
+             ($this->getTxType() === Response::TXTYPE_TOKEN ? $this->getToken() : ''),
+             // As saved in the merchant application.
+
+commit aaf8a90ae95c4078ffcbac722b48e73b91e043ea
+Author: Jamie Burchell <jamie@ib3.uk>
+Date:   Fri Nov 3 12:34:24 2023 +0000
+
+    Update Live and Test URLs as per Opayo requirements
+
+diff --git a/src/Message/AbstractRequest.php b/src/Message/AbstractRequest.php
+index e34811e..462c4eb 100644
+--- a/src/Message/AbstractRequest.php
++++ b/src/Message/AbstractRequest.php
+@@ -58,8 +58,8 @@ abstract class AbstractRequest extends OmnipayAbstractRequest implements Constan
+     /**
+      * @var string Endpoint base URLs.
+      */
+-    protected $liveEndpoint = 'https://live.sagepay.com/gateway/service';
+-    protected $testEndpoint = 'https://test.sagepay.com/gateway/service';
++    protected $liveEndpoint = 'https://live.opayo.eu.elavon.com/gateway/service';
++    protected $testEndpoint = 'https://sandbox.opayo.eu.elavon.com/gateway/service';
+ 
+     /**
+      * Convenience method to switch iframe mode on or off.
+diff --git a/src/Message/Form/Response.php b/src/Message/Form/Response.php
+index 3b48be8..ad7d1ec 100644
+--- a/src/Message/Form/Response.php
++++ b/src/Message/Form/Response.php
+@@ -15,8 +15,8 @@ class Response extends AbstractResponse implements RedirectResponseInterface, Co
+     /**
+      * @var string Endpoint base URLs.
+      */
+-    protected $liveEndpoint = 'https://live.sagepay.com/gateway/service/vspform-register.vsp';
+-    protected $testEndpoint = 'https://test.sagepay.com/gateway/service/vspform-register.vsp';
++    protected $liveEndpoint = 'https://live.opayo.eu.elavon.com/gateway/service/vspform-register.vsp';
++    protected $testEndpoint = 'https://sandbox.opayo.eu.elavon.com/gateway/service/vspform-register.vsp';
+ 
+     /**
+      * Always a redirect, so not yet successful.
+diff --git a/tests/DirectGatewayTest.php b/tests/DirectGatewayTest.php
+index e37d3f2..6f776e5 100644
+--- a/tests/DirectGatewayTest.php
++++ b/tests/DirectGatewayTest.php
+@@ -90,7 +90,7 @@ class DirectGatewayTest extends GatewayTestCase
+         $this->assertTrue($response->isRedirect());
+         $this->assertNull($response->getTransactionReference());
+         $this->assertNull($response->getMessage());
+-        $this->assertSame('https://test.sagepay.com/Simulator/3DAuthPage.asp', $response->getRedirectUrl());
++        $this->assertSame('https://sandbox.opayo.eu.elavon.com/Simulator/3DAuthPage.asp', $response->getRedirectUrl());
+ 
+         $redirectData = $response->getRedirectData();
+         $this->assertSame('065379457749061954', $redirectData['MD']);
+@@ -132,7 +132,7 @@ class DirectGatewayTest extends GatewayTestCase
+         $this->assertTrue($response->isRedirect());
+         $this->assertNull($response->getTransactionReference());
+         $this->assertNull($response->getMessage());
+-        $this->assertSame('https://test.sagepay.com/Simulator/3DAuthPage.asp', $response->getRedirectUrl());
++        $this->assertSame('https://sandbox.opayo.eu.elavon.com/Simulator/3DAuthPage.asp', $response->getRedirectUrl());
+ 
+         $redirectData = $response->getRedirectData();
+         $this->assertSame('065379457749061954', $redirectData['MD']);
+diff --git a/tests/FormGatewayTest.php b/tests/FormGatewayTest.php
+index 14d24e5..1e61cba 100644
+--- a/tests/FormGatewayTest.php
++++ b/tests/FormGatewayTest.php
+@@ -73,7 +73,7 @@ class FormGatewayTest extends GatewayTestCase
+ 
+         // Live (non-test) endpoint.
+         $this->assertSame(
+-            'https://live.sagepay.com/gateway/service/vspform-register.vsp',
++            'https://live.opayo.eu.elavon.com/gateway/service/vspform-register.vsp',
+             $response->getRedirectUrl()
+         );
+ 
+diff --git a/tests/Message/ResponseTest.php b/tests/Message/ResponseTest.php
+index 6602250..3f8d45e 100644
+--- a/tests/Message/ResponseTest.php
++++ b/tests/Message/ResponseTest.php
+@@ -59,7 +59,7 @@ class ResponseTest extends TestCase
+         $this->assertTrue($response->isRedirect());
+         $this->assertNull($response->getTransactionReference());
+         $this->assertNull($response->getMessage());
+-        $this->assertSame('https://test.sagepay.com/Simulator/3DAuthPage.asp', $response->getRedirectUrl());
++        $this->assertSame('https://sandbox.opayo.eu.elavon.com/Simulator/3DAuthPage.asp', $response->getRedirectUrl());
+ 
+         $redirectData = $response->getRedirectData();
+         $this->assertSame('065379457749061954', $redirectData['MD']);
+diff --git a/tests/Message/ServerAuthorizeResponseTest.php b/tests/Message/ServerAuthorizeResponseTest.php
+index 7e669b7..f9c5307 100644
+--- a/tests/Message/ServerAuthorizeResponseTest.php
++++ b/tests/Message/ServerAuthorizeResponseTest.php
+@@ -23,7 +23,7 @@ class ServerAuthorizeResponseTest extends TestCase
+         $this->assertTrue($response->isRedirect());
+         $this->assertSame('{"SecurityKey":"IK776BWNHN","VPSTxId":"{1E7D9C70-DBE2-4726-88EA-D369810D801D}","VendorTxCode":"123456"}', $response->getTransactionReference());
+         $this->assertSame('Server transaction registered successfully.', $response->getMessage());
+-        $this->assertSame('https://test.sagepay.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}', $response->getRedirectUrl());
++        $this->assertSame('https://sandbox.opayo.eu.elavon.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}', $response->getRedirectUrl());
+         $this->assertSame('GET', $response->getRedirectMethod());
+         $this->assertSame([], $response->getRedirectData());
+     }
+diff --git a/tests/Message/ServerTokenRegistrationResponseTest.php b/tests/Message/ServerTokenRegistrationResponseTest.php
+index d639b2b..ede88a9 100644
+--- a/tests/Message/ServerTokenRegistrationResponseTest.php
++++ b/tests/Message/ServerTokenRegistrationResponseTest.php
+@@ -23,7 +23,7 @@ class ServerTokenRegistrationResponseTest extends TestCase
+         $this->assertTrue($response->isRedirect());
+         $this->assertSame('{"SecurityKey":"IK776BWNHN","VPSTxId":"{1E7D9C70-DBE2-4726-88EA-D369810D801D}","VendorTxCode":"123456"}', $response->getTransactionReference());
+         $this->assertSame('Server transaction registered successfully.', $response->getMessage());
+-        $this->assertSame('https://test.sagepay.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}', $response->getRedirectUrl());
++        $this->assertSame('https://sandbox.opayo.eu.elavon.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}', $response->getRedirectUrl());
+         $this->assertSame('GET', $response->getRedirectMethod());
+         $this->assertSame([], $response->getRedirectData());
+     }
+diff --git a/tests/Message/SharedAbortRequestTest.php b/tests/Message/SharedAbortRequestTest.php
+index e7519a3..c0289cd 100644
+--- a/tests/Message/SharedAbortRequestTest.php
++++ b/tests/Message/SharedAbortRequestTest.php
+@@ -36,6 +36,6 @@ class SharedAbortRequestTest extends TestCase
+     {
+         $url = $this->request->getEndpoint();
+ 
+-        $this->assertSame('https://test.sagepay.com/gateway/service/abort.vsp', $url);
++        $this->assertSame('https://sandbox.opayo.eu.elavon.com/gateway/service/abort.vsp', $url);
+     }
+ }
+diff --git a/tests/Message/SharedRefundRequestTest.php b/tests/Message/SharedRefundRequestTest.php
+index 4054d83..cdb13b4 100644
+--- a/tests/Message/SharedRefundRequestTest.php
++++ b/tests/Message/SharedRefundRequestTest.php
+@@ -36,6 +36,6 @@ class SharedRefundRequestTest extends TestCase
+     {
+         $url = $this->request->getEndpoint();
+ 
+-        $this->assertSame('https://test.sagepay.com/gateway/service/refund.vsp', $url);
++        $this->assertSame('https://sandbox.opayo.eu.elavon.com/gateway/service/refund.vsp', $url);
+     }
+ }
+diff --git a/tests/Message/SharedVoidRequestTest.php b/tests/Message/SharedVoidRequestTest.php
+index 39804be..ed9307d 100644
+--- a/tests/Message/SharedVoidRequestTest.php
++++ b/tests/Message/SharedVoidRequestTest.php
+@@ -39,6 +39,6 @@ class SharedVoidRequestTest extends TestCase
+     {
+         $url = $this->request->getEndpoint();
+ 
+-        $this->assertSame('https://test.sagepay.com/gateway/service/void.vsp', $url);
++        $this->assertSame('https://sandbox.opayo.eu.elavon.com/gateway/service/void.vsp', $url);
+     }
+ }
+diff --git a/tests/Mock/DirectPurchase3dSecure.txt b/tests/Mock/DirectPurchase3dSecure.txt
+index 164c689..a333df1 100644
+--- a/tests/Mock/DirectPurchase3dSecure.txt
++++ b/tests/Mock/DirectPurchase3dSecure.txt
+@@ -12,5 +12,5 @@ VPSProtocol=3.00
+ Status=3DAUTH
+ 3DSecureStatus=OK
+ MD=065379457749061954
+-ACSURL=https://test.sagepay.com/Simulator/3DAuthPage.asp
++ACSURL=https://sandbox.opayo.eu.elavon.com/Simulator/3DAuthPage.asp
+ PAReq=BSkaFwYFFTYAGyFbAB0LFRYWBwsBZw0EGwECEX9YRGFWc08pJCVVKgAANS0KADoZCCAMBnIeOxcWRg0LERdOOTQRDFRdVHNYUgwTMBsBCxABJw4DJHE+ERgPCi8MVC0HIAROCAAfBUk4ER89DD0IWDkvMQ1VdFwoUFgwXVYvbHgvMkdBXXNbQGIjdl1ZUEc1XSwqAAgUUicYBDYcB3I2AjYjIzsn
+diff --git a/tests/Mock/ServerPurchaseSuccess.txt b/tests/Mock/ServerPurchaseSuccess.txt
+index c14c3a3..dfb3f89 100644
+--- a/tests/Mock/ServerPurchaseSuccess.txt
++++ b/tests/Mock/ServerPurchaseSuccess.txt
+@@ -13,4 +13,4 @@ Status=OK
+ StatusDetail=Server transaction registered successfully.
+ VPSTxId={1E7D9C70-DBE2-4726-88EA-D369810D801D}
+ SecurityKey=IK776BWNHN
+-NextURL=https://test.sagepay.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}
++NextURL=https://sandbox.opayo.eu.elavon.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}
+diff --git a/tests/Mock/ServerPurchaseWithToken.txt b/tests/Mock/ServerPurchaseWithToken.txt
+index 4698205..c9300fd 100644
+--- a/tests/Mock/ServerPurchaseWithToken.txt
++++ b/tests/Mock/ServerPurchaseWithToken.txt
+@@ -13,5 +13,5 @@ Status=OK
+ StatusDetail=Server transaction registered successfully.
+ VPSTxId={1E7D9C70-DBE2-4726-88EA-D369810D801D}
+ SecurityKey=IK776BWNHN
+-NextURL=https://test.sagepay.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}
++NextURL=https://sandbox.opayo.eu.elavon.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}
+ Token={ABCDEFGH-ABCD-ABCD-ABCD-ABCDEFGHIJKL}
+\ No newline at end of file
+diff --git a/tests/Mock/ServerTokenRegistrationSuccess.txt b/tests/Mock/ServerTokenRegistrationSuccess.txt
+index c14c3a3..dfb3f89 100644
+--- a/tests/Mock/ServerTokenRegistrationSuccess.txt
++++ b/tests/Mock/ServerTokenRegistrationSuccess.txt
+@@ -13,4 +13,4 @@ Status=OK
+ StatusDetail=Server transaction registered successfully.
+ VPSTxId={1E7D9C70-DBE2-4726-88EA-D369810D801D}
+ SecurityKey=IK776BWNHN
+-NextURL=https://test.sagepay.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}
++NextURL=https://sandbox.opayo.eu.elavon.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}
+diff --git a/tests/ServerGatewayTest.php b/tests/ServerGatewayTest.php
+index 91d23f3..3d47714 100644
+--- a/tests/ServerGatewayTest.php
++++ b/tests/ServerGatewayTest.php
+@@ -76,7 +76,7 @@ class ServerGatewayTest extends GatewayTestCase
+         $this->assertTrue($response->isRedirect());
+         $this->assertSame('{"SecurityKey":"IK776BWNHN","VPSTxId":"{1E7D9C70-DBE2-4726-88EA-D369810D801D}","VendorTxCode":"123"}', $response->getTransactionReference());
+         $this->assertSame('Server transaction registered successfully.', $response->getMessage());
+-        $this->assertSame('https://test.sagepay.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}', $response->getRedirectUrl());
++        $this->assertSame('https://sandbox.opayo.eu.elavon.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}', $response->getRedirectUrl());
+     }
+ 
+     public function testAuthorizeFailure()
+@@ -145,7 +145,7 @@ class ServerGatewayTest extends GatewayTestCase
+         $this->assertTrue($response->isRedirect());
+         $this->assertSame('{"SecurityKey":"IK776BWNHN","VPSTxId":"{1E7D9C70-DBE2-4726-88EA-D369810D801D}","VendorTxCode":"123"}', $response->getTransactionReference());
+         $this->assertSame('Server transaction registered successfully.', $response->getMessage());
+-        $this->assertSame('https://test.sagepay.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}', $response->getRedirectUrl());
++        $this->assertSame('https://sandbox.opayo.eu.elavon.com/Simulator/VSPServerPaymentPage.asp?TransactionID={1E7D9C70-DBE2-4726-88EA-D369810D801D}', $response->getRedirectUrl());
+     }
+ 
+     public function testPurchaseFailure()
