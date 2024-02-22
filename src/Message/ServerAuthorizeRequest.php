@@ -39,7 +39,7 @@ class ServerAuthorizeRequest extends DirectAuthorizeRequest
         // ReturnUrl is for legacy usage.
         $data['NotificationURL'] = $this->getNotifyUrl() ?: $this->getReturnUrl();
 
-        $profile = strtoupper($this->getProfile());
+        $profile = strtoupper($this->getProfile() ?: '');
 
         if ($profile === static::PROFILE_NORMAL || $profile === static::PROFILE_LOW) {
             $data['Profile'] = $this->getProfile();

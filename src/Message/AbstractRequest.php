@@ -127,8 +127,8 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     /**
      * @var string Endpoint base URLs.
      */
-    protected $liveEndpoint = 'https://live.sagepay.com/gateway/service';
-    protected $testEndpoint = 'https://test.sagepay.com/gateway/service';
+    protected $liveEndpoint = 'https://live.opayo.eu.elavon.com/gateway/service';
+    protected $testEndpoint = 'https://sandbox.opayo.eu.elavon.com/gateway/service';
 
     /**
      * @return string The vendor name identified the account.

@@ -7,6 +7,8 @@ use Mockery as m;
 
 class ServerNotifyRequestTest extends TestCase
 {
+    protected $request;
+
     public function testServerNotifyResponseSuccess()
     {
         parent::setUp();
