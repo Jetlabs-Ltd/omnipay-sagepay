@@ -162,7 +162,7 @@ index 90bddb3..03b0696 100644
          // Set the profile only if it is LOW (for iframe use) or NORMAL (for full-page redirects)
 
 -        $profile = strtoupper($this->getProfile());
-+        $profile = strtoupper($this->getProfile() ?? '');
++        $profile = strtoupper($this->getProfile() ?: '');
 
          if ($profile === static::PROFILE_NORMAL || $profile === static::PROFILE_LOW) {
              $data['Profile'] = $this->getProfile();
@@ -175,7 +175,7 @@ index a5f313a..118ddfb 100644
          // The two signatures to compare.
          $signature = $this->getSignature();
 -        $VPSSignature = strtolower($this->httpRequest->request->get('VPSSignature'));
-+        $VPSSignature = strtolower($this->httpRequest->request->get('VPSSignature') ?? '');
++        $VPSSignature = strtolower($this->httpRequest->request->get('VPSSignature') ?: '');
 
          if ($VPSSignature !== $signature) {
              throw new InvalidResponseException;
@@ -188,7 +188,7 @@ index fd609fb..e009178 100644
      public function getSignature()
      {
 -        return strtolower($this->getDataItem('VPSSignature'));
-+        return strtolower($this->getDataItem('VPSSignature') ?? '');
++        return strtolower($this->getDataItem('VPSSignature') ?: '');
      }
 
      /**
@@ -197,7 +197,7 @@ index fd609fb..e009178 100644
              $this->getStatus(),
              $this->getTxAuthNo(),
 -            strtolower($this->getVendor()),
-+            strtolower($this->getVendor() ?? ''),
++            strtolower($this->getVendor() ?: ''),
              $this->getAVSCV2(),
              ($this->getTxType() === Response::TXTYPE_TOKEN ? $this->getToken() : ''),
              // As saved in the merchant application.
