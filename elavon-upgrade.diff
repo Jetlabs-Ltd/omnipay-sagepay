@@ -1,51 +1,3 @@
-commit 29b67bd4bef4b7fdb8644ccadaa549be6e307458
-Merge: 2925574 3db0fbd
-Author: Jason Judge <jason.judge@consil.co.uk>
-Date:   Sat Nov 4 12:01:18 2023 +0000
-
-    Merge branch 'jamieburchell-opayo-urls'
-
-
-commit 3db0fbdf614370300eff893d7cc1249935aaef03
-Author: Jason Judge <jason.judge@consil.co.uk>
-Date:   Sat Nov 4 11:59:59 2023 +0000
-
-    Fix old options in phpunit config
-
-diff --git a/phpunit.xml.dist b/phpunit.xml.dist
-index d4fc8a3..83aafa7 100644
---- a/phpunit.xml.dist
-+++ b/phpunit.xml.dist
-@@ -8,16 +8,15 @@
-          convertWarningsToExceptions="true"
-          processIsolation="false"
-          stopOnFailure="false"
--         syntaxCheck="false"
-          beStrictAboutTestsThatDoNotTestAnything="false">
-     <testsuites>
-         <testsuite name="Omnipay Test Suite">
-             <directory>./tests/</directory>
-         </testsuite>
-     </testsuites>
--    <filter>
--        <whitelist>
-+    <coverage>
-+        <include>
-             <directory>./src</directory>
--        </whitelist>
--    </filter>
-+        </include>
-+    </coverage>
- </phpunit>
-
-commit 6d2c45ea37848fc9b22af823d7c5a355f0690b3f
-Merge: db1ee97 92478af
-Author: Jason Judge <jason.judge@consil.co.uk>
-Date:   Sat Nov 4 11:55:52 2023 +0000
-
-    Merge branch 'utf8decodefix' of github.com:jamieburchell/omnipay-sagepay into jamieburchell-opayo-urls
-
-
 commit db1ee97a86940fe8628d2f68aab132fab7c1f0c6
 Author: Jason Judge <jason.judge@consil.co.uk>
 Date:   Sat Nov 4 11:54:53 2023 +0000
@@ -67,7 +19,7 @@ index 6f776e5..098a7f2 100644
 +    protected $voidOptions;
 +    protected $abortOptions;
 +
-     public function setUp(): void
+     public function setUp()
      {
          parent::setUp();
 diff --git a/tests/Message/ServerAuthorizeRequestTest.php b/tests/Message/ServerAuthorizeRequestTest.php
@@ -109,7 +61,7 @@ index c0289cd..58f5d07 100644
  {
 +    protected $request;
 +
-     public function setUp(): void
+     public function setUp()
      {
          parent::setUp();
 diff --git a/tests/Message/SharedRefundRequestTest.php b/tests/Message/SharedRefundRequestTest.php
@@ -122,7 +74,7 @@ index cdb13b4..6d27067 100644
  {
 +    protected $request;
 +
-     public function setUp(): void
+     public function setUp()
      {
          parent::setUp();
 diff --git a/tests/Message/SharedVoidRequestTest.php b/tests/Message/SharedVoidRequestTest.php
@@ -135,7 +87,7 @@ index ed9307d..f51a013 100644
  {
 +    protected $request;
 +
-     public function setUp(): void
+     public function setUp()
      {
          parent::setUp();
 
@@ -162,38 +114,6 @@ index 8a282a5..590df94 100644
  composer.phar
  phpunit.xml
 +/.phpunit.result.cache
-diff --git a/composer.json b/composer.json
-index d6645e4..6e71107 100644
---- a/composer.json
-+++ b/composer.json
-@@ -35,12 +35,14 @@
-     },
-     "require": {
-         "php": "^7.3|^8",
--        "omnipay/common": "~3.0"
-+        "omnipay/common": "~3.0",
-+        "symfony/http-client": "^6.0"
-     },
-     "require-dev": {
-         "omnipay/tests": "^4.1",
-         "squizlabs/php_codesniffer": "^3",
--        "phpspec/prophecy-phpunit": "^2.0"
-+        "phpspec/prophecy-phpunit": "^2.0",
-+        "http-interop/http-factory-guzzle": "^1.2"
-     },
-     "extra": {
-         "branch-alias": {
-@@ -51,5 +53,10 @@
-         "test": "phpunit",
-         "check-style": "phpcs -p --standard=PSR2 src/",
-         "fix-style": "phpcbf -p --standard=PSR2 src/"
-+    },
-+    "config": {
-+        "allow-plugins": {
-+            "php-http/discovery": true
-+        }
-     }
- }
 diff --git a/tests/Message/ServerNotifyRequestTest.php b/tests/Message/ServerNotifyRequestTest.php
 index aa53b78..3763176 100644
 --- a/tests/Message/ServerNotifyRequestTest.php
@@ -223,7 +143,7 @@ index 3d47714..468eedb 100644
 +    protected $refundOptions;
 +    protected $repeatOptions;
 +
-     public function setUp(): void
+     public function setUp()
      {
          parent::setUp();
 
